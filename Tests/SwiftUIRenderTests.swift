@@ -1364,9 +1364,32 @@ final class CLIIntegrationTests: XCTestCase {
 
     private var binaryPath: String!
 
-    override func setUp() {
-        super.setUp()
-        binaryPath = "/Users/ollie/Dropbox/Projects/swiftui-render/.build/debug/swiftui-render"
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        // Find the built binary — SwiftPM puts it next to the test bundle
+        let testBundlePath = Bundle(for: type(of: self)).bundlePath
+        let buildDir = (testBundlePath as NSString).deletingLastPathComponent
+        let candidate = buildDir + "/swiftui-render"
+        if FileManager.default.fileExists(atPath: candidate) {
+            binaryPath = candidate
+        } else {
+            // Try finding it via `which`
+            let task = Process()
+            let pipe = Pipe()
+            task.executableURL = URL(fileURLWithPath: "/usr/bin/which")
+            task.arguments = ["swiftui-render"]
+            task.standardOutput = pipe
+            task.standardError = Pipe()
+            try? task.run()
+            task.waitUntilExit()
+            let found = String(data: pipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8)?
+                .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            binaryPath = found.isEmpty ? nil : found
+        }
+        try XCTSkipUnless(
+            binaryPath != nil && FileManager.default.fileExists(atPath: binaryPath),
+            "CLI binary not found — build first with `swift build`"
+        )
         try? fm.createDirectory(atPath: testDir, withIntermediateDirectories: true)
     }
 
