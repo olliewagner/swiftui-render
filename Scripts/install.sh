@@ -16,11 +16,12 @@ cp -f .build/release/swiftui-render "${INSTALL_BIN}/swiftui-render"
 echo "Installing resources to ${INSTALL_SHARE}/"
 mkdir -p "${INSTALL_SHARE}"
 
-# Copy daemon source if it exists
-if [ -f "${INSTALL_SHARE}/daemon.swift" ]; then
-    echo "Daemon source already exists, keeping it"
-else
-    echo "Note: Place daemon.swift at ${INSTALL_SHARE}/daemon.swift to enable daemon mode"
+# Copy daemon source from repo if not already installed
+if [ -f "Daemon/daemon.swift" ]; then
+    cp -f Daemon/daemon.swift "${INSTALL_SHARE}/daemon.swift"
+    echo "Installed daemon source"
+elif [ ! -f "${INSTALL_SHARE}/daemon.swift" ]; then
+    echo "Warning: daemon.swift not found — daemon mode won't be available"
 fi
 
 # Build daemon if source exists

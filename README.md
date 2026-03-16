@@ -2,8 +2,6 @@
 
 Headless SwiftUI renderer -- render views to PNG from the command line, no Xcode or Simulator required.
 
-![demo](assets/demo.gif)
-
 AI agents can write SwiftUI but can't see it. `swiftui-render` closes that feedback loop: write a view, render it, check the pixels, iterate -- all from the terminal.
 
 ```sh
@@ -16,7 +14,7 @@ swiftui-render MyView.swift --iphone --dark -o screenshot.png
 ### From source (recommended)
 
 ```sh
-git clone https://github.com/nicklama/swiftui-render.git
+git clone https://github.com/olliewagner/swiftui-render.git
 cd swiftui-render
 Scripts/install.sh
 ```
@@ -30,9 +28,10 @@ swift build -c release
 cp -f .build/release/swiftui-render ~/.local/bin/swiftui-render
 ```
 
-### Homebrew (coming soon)
+### Homebrew
 
 ```sh
+brew tap olliewagner/swiftui-render
 brew install swiftui-render
 ```
 
