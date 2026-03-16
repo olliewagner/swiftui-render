@@ -9,6 +9,7 @@ struct Inspect: ParsableCommand {
     @OptionGroup var options: RenderOptions
 
     mutating func run() throws {
+        try options.validateInput()
         let inputPath = try options.inputPath
         let config = RenderConfig(
             inputPath: inputPath,
@@ -17,11 +18,12 @@ struct Inspect: ParsableCommand {
             height: options.resolvedHeight,
             scale: options.scale,
             dark: options.dark,
-            backend: .catalyst, // Annotate requires Catalyst
+            backend: .catalyst,
             annotate: true,
             tree: true,
             deviceFrame: options.deviceFrame,
-            noCache: options.noCache
+            noCache: options.noCache,
+            json: options.json
         )
 
         if options.daemon {

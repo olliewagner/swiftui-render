@@ -3,12 +3,13 @@ import Foundation
 
 struct Preview: ParsableCommand {
     static let configuration = CommandConfiguration(
-        abstract: "Live preview — watch file and re-render on changes via daemon"
+        abstract: "Live preview -- watch file and re-render on changes via daemon"
     )
 
     @OptionGroup var options: RenderOptions
 
     mutating func run() throws {
+        try options.validateInput()
         let inputPath = try options.inputPath
         let config = RenderConfig(
             inputPath: inputPath,
@@ -21,21 +22,29 @@ struct Preview: ParsableCommand {
             annotate: false,
             tree: false,
             deviceFrame: options.deviceFrame,
-            noCache: true
+            noCache: true,
+            json: options.json
         )
 
-        FileHandle.standardError.write("Watching \(URL(fileURLWithPath: inputPath).lastPathComponent) — Ctrl+C to stop\n".data(using: .utf8)!)
+        stderr(
+            "Watching \(URL(fileURLWithPath: inputPath).lastPathComponent) -- Ctrl+C to stop\n")
+
+        // Handle SIGINT gracefully
+        signal(SIGINT) { _ in
+            stderr("\nStopped\n")
+            Darwin.exit(0)
+        }
 
         var lastHash = ""
         while true {
             let currentHash = try SwiftCompiler.fileHash(inputPath)
             if currentHash != lastHash {
                 lastHash = currentHash
-                FileHandle.standardError.write("---\n".data(using: .utf8)!)
+                stderr("---\n")
                 do {
                     try DaemonClient.render(config: config)
                 } catch {
-                    FileHandle.standardError.write("ERROR: \(error)\n".data(using: .utf8)!)
+                    stderr("ERROR: \(error)\n")
                 }
             }
             Thread.sleep(forTimeInterval: 0.5)

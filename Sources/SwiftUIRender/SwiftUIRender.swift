@@ -5,8 +5,8 @@ import Foundation
 struct SwiftUIRender: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "swiftui-render",
-        abstract: "Headless SwiftUI renderer — render views to PNG without Xcode",
-        version: "0.1.0",
+        abstract: "Headless SwiftUI renderer -- render views to PNG without Xcode or Simulator",
+        version: "0.2.0",
         subcommands: [
             Render.self,
             Inspect.self,
@@ -14,6 +14,7 @@ struct SwiftUIRender: ParsableCommand {
             Preview.self,
             Diff.self,
             Daemon.self,
+            Cache.self,
         ],
         defaultSubcommand: Render.self
     )

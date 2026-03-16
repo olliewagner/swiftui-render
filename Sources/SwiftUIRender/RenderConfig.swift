@@ -1,3 +1,4 @@
+import CryptoKit
 import Foundation
 
 /// Complete configuration for a single render operation
@@ -14,6 +15,7 @@ struct RenderConfig {
     let deviceFrame: Bool
     let noCache: Bool
     var snapshot: Bool = false
+    var json: Bool = false
 
     var resolvedWidth: Double { width ?? 390 }
     var resolvedHeight: Double { height ?? 844 }
@@ -28,20 +30,23 @@ struct RenderConfig {
 
 extension String {
     func sha256Prefix(_ length: Int) -> String {
-        let task = Process()
-        let pipe = Pipe()
-        task.executableURL = URL(fileURLWithPath: "/usr/bin/shasum")
-        task.arguments = ["-a", "256"]
-        task.standardInput = Pipe()
-        task.standardOutput = pipe
-
-        try? task.run()
-        (task.standardInput as? Pipe)?.fileHandleForWriting.write(self.data(using: .utf8)!)
-        (task.standardInput as? Pipe)?.fileHandleForWriting.closeFile()
-        task.waitUntilExit()
-
-        let data = pipe.fileHandleForReading.readDataToEndOfFile()
-        let hash = String(data: data, encoding: .utf8) ?? ""
-        return String(hash.prefix(length))
+        guard let data = self.data(using: .utf8) else { return "" }
+        let digest = SHA256.hash(data: data)
+        let hex = digest.map { String(format: "%02x", $0) }.joined()
+        return String(hex.prefix(length))
     }
+}
+
+extension FileHandle {
+    /// Write a string to a file handle (stderr convenience)
+    func write(_ string: String) {
+        if let data = string.data(using: .utf8) {
+            write(data)
+        }
+    }
+}
+
+/// Write a message to stderr
+func stderr(_ message: String) {
+    FileHandle.standardError.write(message)
 }

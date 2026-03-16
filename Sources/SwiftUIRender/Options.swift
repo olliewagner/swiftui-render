@@ -30,26 +30,29 @@ struct RenderOptions: ParsableArguments {
     @Flag(help: "Skip binary cache")
     var noCache: Bool = false
 
+    @Flag(help: "JSON output for machine consumption")
+    var json: Bool = false
+
     // Size presets
-    @Flag(help: "iPhone 15 (390×844)")
+    @Flag(help: "iPhone 15 (390x844)")
     var iphone: Bool = false
 
-    @Flag(help: "iPhone SE (375×667)")
+    @Flag(help: "iPhone SE (375x667)")
     var iphoneSe: Bool = false
 
-    @Flag(name: .long, help: "iPhone 15 Pro Max (430×932)")
+    @Flag(name: .long, help: "iPhone 15 Pro Max (430x932)")
     var iphoneProMax: Bool = false
 
-    @Flag(help: "iPad Pro 12.9\" (1024×1366)")
+    @Flag(help: "iPad Pro 12.9\" (1024x1366)")
     var ipad: Bool = false
 
-    @Flag(name: .long, help: "Small widget (170×170)")
+    @Flag(name: .long, help: "Small widget (170x170)")
     var widgetSmall: Bool = false
 
-    @Flag(name: .long, help: "Medium widget (364×170)")
+    @Flag(name: .long, help: "Medium widget (364x170)")
     var widgetMedium: Bool = false
 
-    @Flag(name: .long, help: "Large widget (364×382)")
+    @Flag(name: .long, help: "Large widget (364x382)")
     var widgetLarge: Bool = false
 
     /// Resolved width from flags/options
@@ -82,11 +85,23 @@ struct RenderOptions: ParsableArguments {
     var inputPath: String {
         get throws {
             let path = (input as NSString).standardizingPath
-            let absolute = path.hasPrefix("/") ? path : FileManager.default.currentDirectoryPath + "/" + path
+            let absolute =
+                path.hasPrefix("/") ? path : FileManager.default.currentDirectoryPath + "/" + path
             guard FileManager.default.fileExists(atPath: absolute) else {
                 throw ValidationError("File not found: \(input)")
             }
             return absolute
+        }
+    }
+
+    /// Validate the input file contains a Preview struct
+    func validateInput() throws {
+        let path = try inputPath
+        let content = try String(contentsOfFile: path, encoding: .utf8)
+        guard content.contains("struct Preview") && content.contains("View") else {
+            throw ValidationError(
+                "Input file must define `struct Preview: View`. Found no such definition in \(input)"
+            )
         }
     }
 }

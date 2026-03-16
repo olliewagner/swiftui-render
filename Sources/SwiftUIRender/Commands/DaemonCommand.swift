@@ -4,7 +4,7 @@ import Foundation
 struct Daemon: ParsableCommand {
     static let configuration = CommandConfiguration(
         abstract: "Manage the hot-reload daemon",
-        subcommands: [Start.self, Stop.self, Status.self],
+        subcommands: [Start.self, Stop.self, Status.self, Build.self],
         defaultSubcommand: Status.self
     )
 
@@ -30,10 +30,21 @@ struct Daemon: ParsableCommand {
         mutating func run() throws {
             if DaemonClient.isRunning {
                 let pid = try String(contentsOfFile: DaemonClient.pidPath, encoding: .utf8)
-                print("Daemon running (PID \(pid.trimmingCharacters(in: .whitespacesAndNewlines)))")
+                print(
+                    "Daemon running (PID \(pid.trimmingCharacters(in: .whitespacesAndNewlines)))")
             } else {
                 print("Daemon not running")
             }
+        }
+    }
+
+    struct Build: ParsableCommand {
+        static let configuration = CommandConfiguration(
+            abstract: "Build the daemon app from embedded source"
+        )
+
+        mutating func run() throws {
+            try DaemonClient.buildDaemon()
         }
     }
 }

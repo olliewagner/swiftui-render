@@ -3,14 +3,14 @@ import Foundation
 /// Generates Swift source code for each rendering backend
 enum TemplateGenerator {
 
-    static func generate(config: RenderConfig) -> String {
+    static func generate(config: RenderConfig, outputInfoPath: String? = nil) -> String {
         switch config.backend {
         case .imageRenderer:
             return imageRendererTemplate(config: config)
         case .apphost:
             return appHostTemplate(config: config)
         case .catalyst:
-            return catalystTemplate(config: config)
+            return catalystTemplate(config: config, outputInfoPath: outputInfoPath)
         }
     }
 
@@ -53,7 +53,7 @@ enum TemplateGenerator {
                     try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
                     try png.write(to: url)
                     let kb = png.count / 1024
-                    print("\\(Int(image.size.width))×\\(Int(image.size.height)) @\\(Int(\(config.scale)))x (\\(kb)KB) → \\(path)")
+                    print("\\(Int(image.size.width))x\\(Int(image.size.height)) @\\(Int(\(config.scale)))x (\\(kb)KB) -> \\(path)")
                 } catch {
                     fputs("ERROR: \\(error)\\n", stderr); exit(1)
                 }
@@ -115,7 +115,7 @@ enum TemplateGenerator {
                     let url = URL(fileURLWithPath: path)
                     try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
                     try png.write(to: url)
-                    print("\\(pw)×\\(ph) (\\(png.count / 1024)KB) → \\(path)")
+                    print("\\(pw)x\\(ph) (\\(png.count / 1024)KB) -> \\(path)")
                 } catch { fputs("ERROR: \\(error)\\n", stderr) }
                 NSApp.terminate(nil)
             }
@@ -135,7 +135,7 @@ enum TemplateGenerator {
 
     // MARK: - Catalyst (full iOS rendering)
 
-    private static func catalystTemplate(config: RenderConfig) -> String {
+    private static func catalystTemplate(config: RenderConfig, outputInfoPath: String?) -> String {
         let w = config.resolvedWidth
         let h = config.resolvedHeight
         let uikitStyle = config.dark ? ".dark" : ".unspecified"
@@ -169,6 +169,20 @@ enum TemplateGenerator {
             deviceFrameCode = """
 
                     image = __addDeviceFrame(on: image, width: width, height: height, scale: scale, isDark: \(isDark))
+            """
+        }
+
+        // Write output info to a file so the CLI can read it (Catalyst stdout doesn't reach the CLI)
+        let outputInfoCode: String
+        if let infoPath = outputInfoPath {
+            let infoPathEscaped = infoPath.replacingOccurrences(of: "\"", with: "\\\"")
+            outputInfoCode = """
+                        let info = "\\(Int(width * scale))x\\(Int(height * scale)) @\\(Int(scale))x (\\(png.count / 1024)KB) -> \\(path)"
+                        try? info.write(toFile: "\(infoPathEscaped)", atomically: true, encoding: .utf8)
+            """
+        } else {
+            outputInfoCode = """
+                        print("\\(Int(width * scale))x\\(Int(height * scale)) @\\(Int(scale))x (\\(png.count / 1024)KB) -> \\(path)")
             """
         }
 
@@ -222,7 +236,7 @@ enum TemplateGenerator {
                     let url = URL(fileURLWithPath: path)
                     try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
                     try png.write(to: url)
-                    print("\\(Int(width * scale))×\\(Int(height * scale)) (\\(png.count / 1024)KB) → \\(path)")
+        \(outputInfoCode)
                 } catch { fputs("ERROR: \\(error)\\n", stderr); exit(1) }
                 exit(0)
             }
@@ -272,7 +286,7 @@ enum TemplateGenerator {
             let ctx = uiCtx.cgContext
             for (i, info) in layers.enumerated() {
                 let c = colors[i % colors.count]; ctx.setStrokeColor(c.cgColor); ctx.setLineWidth(1); ctx.stroke(info.frame)
-                let s = "\\(Int(info.frame.width))×\\(Int(info.frame.height))"
+                let s = "\\(Int(info.frame.width))x\\(Int(info.frame.height))"
                 let a: [NSAttributedString.Key: Any] = [.font: UIFont.systemFont(ofSize: 8, weight: .bold), .foregroundColor: UIColor.white, .backgroundColor: c.withAlphaComponent(0.9)]
                 let sz = (s as NSString).size(withAttributes: a)
                 var lx = info.frame.minX, ly = info.frame.minY - sz.height - 1
@@ -297,7 +311,7 @@ enum TemplateGenerator {
             default: t = "Box"
             }
             let indent = String(repeating: "  ", count: max(0, depth - 1))
-            var line = "\\(indent)\\(t) \\(Int(f.width))×\\(Int(f.height))"
+            var line = "\\(indent)\\(t) \\(Int(f.width))x\\(Int(f.height))"
             if f.origin.x != 0 || f.origin.y != 0 { line += " @ (\\(Int(f.origin.x)),\\(Int(f.origin.y)))" }
             fputs(line + "\\n", file)
         }

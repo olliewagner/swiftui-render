@@ -9,6 +9,7 @@ struct Snapshot: ParsableCommand {
     @OptionGroup var options: RenderOptions
 
     mutating func run() throws {
+        try options.validateInput()
         let inputPath = try options.inputPath
         let config = RenderConfig(
             inputPath: inputPath,
@@ -22,7 +23,8 @@ struct Snapshot: ParsableCommand {
             tree: false,
             deviceFrame: false,
             noCache: options.noCache,
-            snapshot: true
+            snapshot: true,
+            json: options.json
         )
 
         // Snapshot always uses daemon (needs real UIWindow for accessibility)
