@@ -17,7 +17,7 @@ struct SwiftUIRender: ParsableCommand {
               swiftui-render diff Before.swift After.swift       # side-by-side comparison
               swiftui-render inspect MyView.swift --iphone       # debug annotations + view tree
             """,
-        version: "0.2.0",
+        version: "0.2.1",
         subcommands: [
             Render.self,
             Inspect.self,
