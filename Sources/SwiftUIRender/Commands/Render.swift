@@ -20,6 +20,7 @@ struct Render: ParsableCommand {
     var backend: RenderBackend = .imageRenderer
 
     mutating func run() throws {
+        try SwiftCompiler.ensureToolchainAvailable()
         try options.validateInput()
         let inputPath = try options.inputPath
         let config = RenderConfig(

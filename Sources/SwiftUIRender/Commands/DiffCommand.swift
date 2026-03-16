@@ -3,7 +3,13 @@ import Foundation
 
 struct Diff: ParsableCommand {
     static let configuration = CommandConfiguration(
-        abstract: "Visual side-by-side diff of two SwiftUI views"
+        abstract: "Visual side-by-side diff of two SwiftUI views",
+        discussion: """
+            Examples:
+              swiftui-render diff Before.swift After.swift --iphone
+              swiftui-render diff OldCard.swift NewCard.swift -o comparison.png
+              swiftui-render diff A.swift B.swift --json
+            """
     )
 
     @Argument(help: "First Swift file (before)")
@@ -24,7 +30,11 @@ struct Diff: ParsableCommand {
     @Flag(name: .long, help: "iPhone 15 Pro Max (430x932)")
     var iphoneProMax: Bool = false
 
+    @Flag(help: "JSON output for machine consumption")
+    var json: Bool = false
+
     mutating func run() throws {
+        try SwiftCompiler.ensureToolchainAvailable()
         let width = iphone ? 390.0 : iphoneProMax ? 430.0 : nil
         let height = iphone ? 844.0 : iphoneProMax ? 932.0 : nil
 
@@ -32,10 +42,10 @@ struct Diff: ParsableCommand {
         let pathA = resolveAbsolutePath(inputA)
         let pathB = resolveAbsolutePath(inputB)
         guard FileManager.default.fileExists(atPath: pathA) else {
-            throw ValidationError("File not found: \(inputA)")
+            throw ValidationError("File not found: \(pathA)")
         }
         guard FileManager.default.fileExists(atPath: pathB) else {
-            throw ValidationError("File not found: \(inputB)")
+            throw ValidationError("File not found: \(pathB)")
         }
 
         let tmpDir = FileManager.default.temporaryDirectory
@@ -70,7 +80,7 @@ struct Diff: ParsableCommand {
         try CompileAndRender.run(config: configB)
 
         // Compose side-by-side (in-process, no separate compilation)
-        try DiffComposer.compose(imageA: imgA, imageB: imgB, output: output, scale: scale)
+        try DiffComposer.compose(imageA: imgA, imageB: imgB, output: output, scale: scale, json: json)
     }
 
     private func resolveAbsolutePath(_ path: String) -> String {

@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
+
+      - name: Build (debug)
+        run: swift build
+
+      - name: Test
+        run: swift test
+
+      - name: Build (release)
+        run: swift build -c release
+
+      - name: Verify binary runs
+        run: .build/release/swiftui-render --version
+
+      - name: Build daemon
+        run: |
+          mkdir -p ~/.local/share/swiftui-render
+          # Daemon build requires daemon.swift source -- skip if not present
+          if [ -f Scripts/build-daemon.sh ]; then
+            echo "Daemon build script exists (requires daemon.swift at runtime)"
+          fi

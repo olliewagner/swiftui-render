@@ -3,12 +3,21 @@ import Foundation
 
 struct Inspect: ParsableCommand {
     static let configuration = CommandConfiguration(
-        abstract: "Render with debug annotations and view tree dump"
+        abstract: "Render with debug annotations and view tree dump",
+        discussion: """
+            Renders the view with colored bounding boxes around every subview,
+            plus a text-based view tree dump to stderr.
+
+            Examples:
+              swiftui-render inspect MyView.swift --iphone
+              swiftui-render inspect MyView.swift --iphone --dark
+            """
     )
 
     @OptionGroup var options: RenderOptions
 
     mutating func run() throws {
+        try SwiftCompiler.ensureToolchainAvailable()
         try options.validateInput()
         let inputPath = try options.inputPath
         let config = RenderConfig(

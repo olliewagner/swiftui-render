@@ -3,7 +3,7 @@ import Foundation
 
 /// Composes a side-by-side diff image from two rendered PNGs — in-process using AppKit
 enum DiffComposer {
-    static func compose(imageA: String, imageB: String, output: String, scale: Double) throws {
+    static func compose(imageA: String, imageB: String, output: String, scale: Double, json: Bool = false) throws {
         guard let imgA = NSImage(contentsOfFile: imageA) else {
             throw DiffError.cannotLoad(imageA)
         }
@@ -78,7 +78,12 @@ enum DiffComposer {
 
         let pw = Int(totalW * pixelScale)
         let ph = Int(totalH * pixelScale)
-        print("\(pw)x\(ph) (\(png.count / 1024)KB) -> \(output)")
+        if json {
+            let escaped = output.replacingOccurrences(of: "\"", with: "\\\"")
+            print("{\"width\":\(pw),\"height\":\(ph),\"size\":\(png.count),\"path\":\"\(escaped)\"}")
+        } else {
+            print("\(pw)x\(ph) (\(png.count / 1024)KB) -> \(output)")
+        }
     }
 }
 

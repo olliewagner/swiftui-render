@@ -194,8 +194,11 @@ enum CompileAndRender {
             fileSize = sizeKB * 1024
         }
 
+        let escaped = path
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"")
         print(
-            "{\"width\":\(width),\"height\":\(height),\"size\":\(fileSize),\"path\":\"\(path)\",\"time_ms\":\(Int(totalMs))}"
+            "{\"width\":\(width),\"height\":\(height),\"size\":\(fileSize),\"path\":\"\(escaped)\",\"time_ms\":\(Int(totalMs))}"
         )
     }
 

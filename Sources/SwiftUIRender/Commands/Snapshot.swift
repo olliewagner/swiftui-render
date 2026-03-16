@@ -3,7 +3,15 @@ import Foundation
 
 struct Snapshot: ParsableCommand {
     static let configuration = CommandConfiguration(
-        abstract: "Output accessibility tree with @e refs (like agent-browser snapshot)"
+        abstract: "Output accessibility tree with @e refs (like agent-browser snapshot)",
+        discussion: """
+            Requires the daemon (auto-started if not running). Outputs element
+            references to stderr for use in automated UI inspection.
+
+            Examples:
+              swiftui-render snapshot MyView.swift --iphone
+              swiftui-render snapshot MyView.swift --json
+            """
     )
 
     @OptionGroup var options: RenderOptions

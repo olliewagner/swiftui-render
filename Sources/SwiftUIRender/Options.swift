@@ -88,7 +88,10 @@ struct RenderOptions: ParsableArguments {
             let absolute =
                 path.hasPrefix("/") ? path : FileManager.default.currentDirectoryPath + "/" + path
             guard FileManager.default.fileExists(atPath: absolute) else {
-                throw ValidationError("File not found: \(input)")
+                throw ValidationError("File not found: \(absolute)")
+            }
+            guard absolute.hasSuffix(".swift") else {
+                throw ValidationError("Expected a .swift file, got: \(absolute)")
             }
             return absolute
         }
@@ -98,9 +101,11 @@ struct RenderOptions: ParsableArguments {
     func validateInput() throws {
         let path = try inputPath
         let content = try String(contentsOfFile: path, encoding: .utf8)
-        guard content.contains("struct Preview") && content.contains("View") else {
+        // Match "struct Preview" followed by ": View" or ": some View" with flexible whitespace
+        let pattern = "struct\\s+Preview\\s*:.*\\bView\\b"
+        guard content.range(of: pattern, options: .regularExpression) != nil else {
             throw ValidationError(
-                "Input file must define `struct Preview: View`. Found no such definition in \(input)"
+                "Input file must define `struct Preview: View`. Found no such definition in \(path)"
             )
         }
     }

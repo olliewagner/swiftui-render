@@ -3,7 +3,15 @@ import Foundation
 
 struct Preview: ParsableCommand {
     static let configuration = CommandConfiguration(
-        abstract: "Live preview -- watch file and re-render on changes via daemon"
+        abstract: "Live preview -- watch file and re-render on changes via daemon",
+        discussion: """
+            Watches the input file for changes and re-renders via the daemon
+            on every save. Press Ctrl+C to stop.
+
+            Examples:
+              swiftui-render preview MyView.swift --iphone
+              swiftui-render preview MyView.swift --iphone --dark -o ~/Desktop/preview.png
+            """
     )
 
     @OptionGroup var options: RenderOptions
