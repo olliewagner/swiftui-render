@@ -1,8 +1,9 @@
 class SwiftuiRender < Formula
   desc "Headless SwiftUI renderer -- render views to PNG from the command line"
-  homepage "https://github.com/nicklama/swiftui-render"
-  url "https://github.com/nicklama/swiftui-render/archive/refs/tags/v0.2.0.tar.gz"
-  sha256 "PLACEHOLDER"
+  homepage "https://github.com/olliewagner/swiftui-render"
+  head "https://github.com/olliewagner/swiftui-render.git", branch: "main"
+  url "https://github.com/olliewagner/swiftui-render.git", tag: "v0.2.0"
+  version "0.2.0"
   license "MIT"
 
   depends_on xcode: ["15.0", :build]
