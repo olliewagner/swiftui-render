@@ -109,6 +109,19 @@ struct RenderOptions: ParsableArguments {
             )
         }
     }
+
+    /// Warn if the file uses system containers that won't render in default mode
+    func warnAboutSystemContainers(backend: RenderBackend) {
+        guard backend == .imageRenderer else { return }
+        guard let path = try? inputPath,
+              let content = try? String(contentsOfFile: path, encoding: .utf8) else { return }
+
+        let containers = ["NavigationStack", "NavigationView", "List", "ScrollView", "TabView", "Form"]
+        let found = containers.filter { content.contains($0) }
+        if !found.isEmpty {
+            stderr("warning: \(found.joined(separator: ", ")) won't render in default mode (renders as blank). Use --backend catalyst or --daemon\n")
+        }
+    }
 }
 
 /// Rendering backend

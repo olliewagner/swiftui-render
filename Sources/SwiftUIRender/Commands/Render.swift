@@ -22,6 +22,7 @@ struct Render: ParsableCommand {
     mutating func run() throws {
         try SwiftCompiler.ensureToolchainAvailable()
         try options.validateInput()
+        options.warnAboutSystemContainers(backend: backend)
         let inputPath = try options.inputPath
         let config = RenderConfig(
             inputPath: inputPath,

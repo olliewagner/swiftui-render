@@ -20,10 +20,10 @@ struct RenderConfig {
     var resolvedWidth: Double { width ?? 390 }
     var resolvedHeight: Double { height ?? 844 }
 
-    /// Cache key based on content + options (excludes output path for reusability)
+    /// Cache key based on content + all options that affect the compiled binary
     var cacheKey: String {
         let content = (try? String(contentsOfFile: inputPath, encoding: .utf8)) ?? ""
-        let key = "\(content)|\(backend)|\(width ?? 0)|\(height ?? 0)|\(scale)|\(dark)|\(annotate)|\(deviceFrame)"
+        let key = "\(content)|\(backend)|\(width ?? 0)|\(height ?? 0)|\(scale)|\(dark)|\(annotate)|\(deviceFrame)|\(outputPath)"
         return key.sha256Prefix(16)
     }
 }
